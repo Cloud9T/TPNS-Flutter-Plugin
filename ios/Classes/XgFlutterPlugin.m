@@ -508,7 +508,7 @@ bool withInAppAlert = true;
         });
     } else {
         // 如果是空的，就兼容存在本地push的情况
-        UIConcreteLocalNotification *localNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
+        UILocalNotification *localNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
         NSDictionary *localUserInfo = localNotification.userInfo;
         
         NSDictionary *tpnsInfo = localUserInfo[@"xg"];
