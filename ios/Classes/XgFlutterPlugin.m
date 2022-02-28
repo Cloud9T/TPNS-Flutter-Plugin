@@ -498,6 +498,8 @@ bool withInAppAlert = true;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     NSDictionary *remoteNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
+    CN_LOG_ERROR(gXgFlutterPluginModule, @"xgPushClickAction, application: %@", remoteNotification);
+
     if (remoteNotification) {
         dispatch_async(dispatch_get_main_queue(), ^{
             CN_LOG_ERROR(gXgFlutterPluginModule, @"xgPushClickAction, arguments: %@", remoteNotification);
