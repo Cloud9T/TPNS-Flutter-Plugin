@@ -497,16 +497,31 @@ bool withInAppAlert = true;
 #pragma mark - AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    NSDictionary *remoteNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
-    CN_LOG_ERROR(gXgFlutterPluginModule, @"xgPushClickAction, application: %@", remoteNotification);
+    CN_LOG_ERROR(gXgFlutterPluginModule, @"xgPushClickAction, launchOptions: %@", launchOptions);
 
+    NSDictionary *remoteNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
     if (remoteNotification) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            CN_LOG_ERROR(gXgFlutterPluginModule, @"xgPushClickAction, arguments: %@", remoteNotification);
+            CN_LOG_ERROR(gXgFlutterPluginModule, @"xgPushClickAction remote notification, arguments: %@", remoteNotification);
 
             [self->_channel invokeMethod:@"xgPushClickAction" arguments:remoteNotification];
         });
+    } else {
+        // 如果是空的，就兼容存在本地push的情况
+        UIConcreteLocalNotification *localNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
+        NSDictionary *localUserInfo = localNotification.userInfo;
+        
+        NSDictionary *tpnsInfo = localUserInfo[@"xg"];
+        NSNumber *msgType = tpnsInfo[@"msgtype"];
+        if (msgType.integerValue == 1) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                CN_LOG_ERROR(gXgFlutterPluginModule, @"xgPushClickAction local notification, arguments: %@", localUserInfo);
+
+                [self->_channel invokeMethod:@"xgPushClickAction" arguments:localUserInfo];
+            });
+        }
     }
+    
     return YES;
 }
 
