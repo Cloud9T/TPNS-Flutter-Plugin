@@ -11,10 +11,16 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # 日志组件
+  log_flutter:
+    git:
+      url: https://git.woa.com/CloudNine/MiddlePlatform/log_flutter.git
+      ref: aa3833e507b33e6259e1d880d2cbd7d54c1972d0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

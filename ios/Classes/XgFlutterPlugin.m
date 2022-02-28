@@ -6,6 +6,10 @@
 #import <UserNotifications/UserNotifications.h>
 #endif
 
+#import "LogFlutterManager.h"
+
+static NSString * const gXgFlutterPluginModule = @"gXgFlutterPluginModule";
+
 typedef NS_ENUM(NSUInteger, XGPushTokenAccountType) {
     XGPushTokenAccountTypeUNKNOWN = (0),         // 未知类型，单账号绑定默认使用
     XGPushTokenAccountTypeCUSTOM = (1),          // 自定义
@@ -44,14 +48,20 @@ bool withInAppAlert = true;
   instance.channel = channel;
   [registrar addApplicationDelegate:instance];
   [registrar addMethodCallDelegate:instance channel:channel];
+    CN_LOG_ERROR(gXgFlutterPluginModule, @"registerWithRegistrar tpns_flutter_plugin");
 }
 
 - (id)init {
     self = [super init];
+    
+    CN_LOG_ERROR(gXgFlutterPluginModule, @"init");
+
     return self;
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+    CN_LOG_ERROR(gXgFlutterPluginModule, @"method: %@, args: %@", call.method, call.arguments);
+
   if ([@"xgSdkVersion" isEqualToString:call.method]) {
     result([[XGPush defaultManager] sdkVersion]);
   } else if([@"getOtherPushToken" isEqualToString:call.method]) {
@@ -357,14 +367,19 @@ bool withInAppAlert = true;
 - (void)xgPushDidReceiveNotificationResponse:(nonnull id)response withCompletionHandler:(nonnull void (^)(void))completionHandler {
     NSDictionary *notificationDic = nil;
     if ([response isKindOfClass:[UNNotificationResponse class]]) {
+        CN_LOG_ERROR(gXgFlutterPluginModule, @"[response isKindOfClass:[UNNotificationResponse class]]");
+
         /// iOS10+消息体获取
         notificationDic = ((UNNotificationResponse *)response).notification.request.content.userInfo;
     } else if ([response isKindOfClass:[NSDictionary class]]) {
+        CN_LOG_ERROR(gXgFlutterPluginModule, @"[response isKindOfClass:[NSDictionary class]]");
+
         /// <IOS10消息体获取
         notificationDic = response;
     }
     
     NSLog(@"[TPNS Demo] click notification %@", notificationDic);
+    CN_LOG_ERROR(gXgFlutterPluginModule, @"xgPushClickAction, arguments: %@", notificationDic);
     
     [_channel invokeMethod:@"xgPushClickAction" arguments:notificationDic];
     completionHandler();
@@ -485,6 +500,8 @@ bool withInAppAlert = true;
     NSDictionary *remoteNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
     if (remoteNotification) {
         dispatch_async(dispatch_get_main_queue(), ^{
+            CN_LOG_ERROR(gXgFlutterPluginModule, @"xgPushClickAction, arguments: %@", remoteNotification);
+
             [self->_channel invokeMethod:@"xgPushClickAction" arguments:remoteNotification];
         });
     }
