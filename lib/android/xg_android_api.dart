@@ -277,6 +277,13 @@ class XgAndroidApi {
     _channel?.invokeMethod('createNotificationChannel', {'channelId': channelId, 'channelName': channelName});
   }
 
+  /// 创建通知渠道，指定通知提示各项属性
+  /// 
+  /// soundFileName 直接填写铃声文件名，不带后缀；铃声文件放置在安卓应用模块的资源目录 /res/raw 下
+  void createNotificationChannelWithSound({String? channelId, String? channelName, bool? enableVibration, bool? enableLights, bool? enableSound, String? soundFileName}) {
+    _channel?.invokeMethod('createNotificationChannel', {'channelId': channelId, 'channelName': channelName, 'enableVibration': enableVibration, 'enableLights': enableLights, 'enableSound': enableSound, 'soundFileName': soundFileName});
+  }
+
   /*----------------小米厂商通道集成-----------*/
 
   /// 设置小米推送的APP_ID
@@ -453,13 +460,19 @@ class XgAndroidApi {
 
   /*------------------谷歌厂商通道集成---------------*/
 
-  ///判断是否为谷歌手机
+  ///判断是否为支持FCM手机
   @Deprecated(
       'TPNS SDK would auto-check if the device supports Firebase-messaging.'
   )
   Future<bool> isFcmRom() async {
     final bool isFcm = await _channel?.invokeMethod('isFcmRom');
     return isFcm;
+  }
+
+  ///判断是否为谷歌手机
+  Future<bool> isGoogleRom() async {
+    final bool isGoogle = await _channel?.invokeMethod('isGoogleRom');
+    return isGoogle;
   }
 
   ///开启谷歌手机厂商通道
@@ -469,8 +482,8 @@ class XgAndroidApi {
           'XgFlutterPlugin.xgApi.regPush();'
   )
   void startFcmPush() async {
-    final bool isFcm = await _channel?.invokeMethod('isFcmRom');
-    if (isFcm) {
+    final bool isGoogle = await _channel?.invokeMethod('isGoogleRom');
+    if (isGoogle) {
       _channel?.invokeMethod('enableOtherPush');
       _channel?.invokeMethod('regPush');
     }

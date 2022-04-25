@@ -1,6 +1,6 @@
 package com.tencent.tpns.plugin
 
-
+import android.net.Uri;
 import android.util.Log
 import androidx.annotation.NonNull
 import com.tencent.android.tpush.XGIOperateCallback
@@ -112,6 +112,7 @@ public class XgFlutterPlugin : FlutterPlugin, MethodCallHandler {
             Extras.FOR_FLUTTER_METHOD_IS_OPPO_ROM -> isOppoRom(p0, p1)
             Extras.FOR_FLUTTER_METHOD_IS_VIVO_ROM -> isVivoRom(p0, p1)
             Extras.FOR_FLUTTER_METHOD_IS_FCM_ROM -> isFcmRom(p0, p1)
+            Extras.FOR_FLUTTER_METHOD_IS_GOOGLE_ROM -> isGoogleRom(p0, p1)
             Extras.FOR_FLUTTER_METHOD_IS_360_ROM -> is360Rom(p0, p1)
             Extras.FOR_FLUTTER_METHOD_ENABLE_DEBUG -> setEnableDebug(p0, p1)
             Extras.FOR_FLUTTER_METHOD_SET_HEADER_BEAT_INTERVAL_MS -> setHeartbeatIntervalMs(p0, p1)
@@ -657,9 +658,29 @@ public class XgFlutterPlugin : FlutterPlugin, MethodCallHandler {
         val map = call.arguments<Map<String, Int>>()
         val channelId = map[Extras.CHANNEL_ID] as String
         val channelName = map[Extras.CHANNEL_NAME] as String
-        Log.i(TAG, "调用信鸽SDK-->createNotificationChannel(${channelId}, ${channelName})")
-        XGPushManager.createNotificationChannel(if (!isPluginBindingValid()) registrar.context() else mPluginBinding.applicationContext, 
-            channelId, channelName, true, true, true, null)
+        if (map.size == 2) {
+            Log.i(TAG, "调用信鸽SDK-->createNotificationChannel(${channelId}, ${channelName})")
+            XGPushManager.createNotificationChannel(if (!isPluginBindingValid()) registrar.context() else mPluginBinding.applicationContext, 
+                channelId, channelName, true, true, true, null)
+        } else {
+            val enableVibration = map[Extras.ENABLE_VIBRATION] as Boolean
+            val enableLights = map[Extras.ENABLE_LIGHTS] as Boolean
+            val enableSound = map[Extras.ENABLE_SOUND] as Boolean
+            val soundFileName = map[Extras.SOUND_FILE_NAME] as String
+
+            val context = if (!isPluginBindingValid()) registrar.context() else mPluginBinding.applicationContext
+            val soundFileId = context.getResources().getIdentifier(soundFileName, "raw", context.getPackageName())
+            if (soundFileId > 0) {
+                val soundUri = "android.resource://" + context.getPackageName() + "/" + soundFileId;
+                Log.i(TAG, "调用信鸽SDK-->createNotificationChannel(${channelId}, ${channelName}, ${enableVibration}, ${enableLights}, ${enableSound}, ${soundUri})")
+                XGPushManager.createNotificationChannel(if (!isPluginBindingValid()) registrar.context() else mPluginBinding.applicationContext, 
+                    channelId, channelName, enableVibration, enableLights, enableSound, Uri.parse(soundUri))
+            } else {
+                Log.i(TAG, "调用信鸽SDK-->createNotificationChannel(${channelId}, ${channelName}, ${enableVibration}, ${enableLights}, ${enableSound}, null)")
+                XGPushManager.createNotificationChannel(if (!isPluginBindingValid()) registrar.context() else mPluginBinding.applicationContext, 
+                    channelId, channelName, enableVibration, enableLights, enableSound, null)
+            }
+        }
     }
 
 
@@ -749,9 +770,16 @@ public class XgFlutterPlugin : FlutterPlugin, MethodCallHandler {
     }
 
     /**
-     * 判断是否为谷歌手机
+     * 判断是否为支持FCM手机
      */
     fun isFcmRom(call: MethodCall?, result: MethodChannel.Result?) { //        boolean is
+    }
+
+    /**
+     * 判断是否为谷歌手机
+     */
+    private fun isGoogleRom(call: MethodCall, result: MethodChannel.Result) {
+      result.success(DeviceInfoUtil.isGoogleRom())
     }
 
     /**
